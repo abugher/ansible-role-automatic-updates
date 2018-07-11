@@ -1,0 +1,55 @@
+---
+install_packages:
+  - 'debian-goodies'
+  - 'debian-keyring'
+  - 'debian-archive-keyring'
+  - 'aptitude'
+install_files:
+  - owner:              'root'
+    group:              'root'
+    mode:               '0755'
+    src:                "files/bin/stamp"
+    dest:               '/usr/local/bin/stamp'
+  - owner:              'root'
+    group:              'root'
+    mode:               '0755'
+    src:                "files/bin/update_debian"
+    dest:               '/usr/local/bin/update_debian'
+  - owner:              'root'
+    group:              'root'
+    mode:               '0755'
+    src:                "files/bin/update_debian_now"
+    dest:               '/usr/local/bin/update_debian_now'
+  - owner:              'root'
+    group:              'root'
+    mode:               '0755'
+    src:                "files/bin/update_debian_cronjob"
+    dest:               '/usr/local/bin/update_debian_cronjob'
+  - owner:              'root'
+    group:              'root'
+    mode:               '0755'
+    src:                "../{{ inventory_hostname }}/files/conf/policy-rc.d"
+    dest:               '/usr/sbin/policy-rc.d'
+  - owner:              'root'
+    group:              'root'
+    mode:               '0644'
+    src:                "../{{ inventory_hostname }}/files/cron.d/update_debian"
+    dest:               '/etc/cron.d/update_debian'
+  - owner:              'root'
+    group:              'root'
+    mode:               '0644'
+    src:                "../{{ inventory_hostname }}/files/conf/sources.list"
+    dest:               '/etc/apt/sources.list'
+sync_dirs:
+  - src:                '../{{ inventory_hostname }}/files/conf/sources.list.d/'
+    dest:               '/etc/apt/sources.list.d/'
+    delete:             'yes'
+remove_files:
+  - '/etc/apt/sources.list.d/collabora.list'
+  - '/etc/apt/sources.list.d/raspi.list'
+  - '/etc/apt/sources.list.d/wolfram.list'
+commands:
+  - command:            'apt-key update'
+    chdir:              '/'
+    creates:            '/NEVER_GETS_CREATED'
+    user:               'root'
