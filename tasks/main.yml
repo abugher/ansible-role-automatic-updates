@@ -1,6 +1,7 @@
 ---
 - include:              '../tasks/install_packages.yml'
 - include:              '../tasks/install_files.yml'
+- include:              '../tasks/sync_dirs.yml'
 - include:              '../tasks/remove_files.yml'
 - include:              '../tasks/commands.yml'
   when:                 install_packages_result.changed
