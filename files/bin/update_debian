@@ -53,16 +53,20 @@ echo -e "No reboot required."
   || fail $ERR_AUTOCLEAN "Autoclean failed: ${?}"
 echo -e "Autoclean successful."
 
-/usr/local/bin/update_python_packages \
-  || fail $ERR_PYTHON "Python updates failed: ${?}"
-echo -e "Python updates successful."
+if test -e /usr/local/bin/update_python_packages; then
+  /usr/local/bin/update_python_packages \
+    || fail $ERR_PYTHON "Python updates failed: ${?}"
+  echo -e "Python updates successful."
+else
+  echo -e "Python updates skipped."
+fi
 
 if test -e /usr/local/bin/update_kanboard; then
   /usr/local/bin/update_kanboard \
     || fail $ERR_KANBOARD "kanboard update failed: ${?}"
-  echo -e "kanboard update successful."
+  echo -e "Kanboard update successful."
 else
-  echo -e "kanboard update skipped."
+  echo -e "Kanboard update skipped."
 fi
 
 # https://github.com/Hexxeh/rpi-firmware/issues/109
