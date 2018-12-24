@@ -3,7 +3,7 @@
 - include:              '../tasks/install_files.yml'
 - include:              '../tasks/sync_dirs.yml'
 - include:              '../tasks/remove_files.yml'
-- include:              '../tasks/commands.yml'
-  when:                 install_packages_result.changed
 - include:              '../tasks/apt_update.yml'
+- include:              '../tasks/apt_upgrade.yml'
+- include:              '../tasks/apt_full_upgrade.yml'
   when:                 install_files_result.changed or remove_files_result.changed
