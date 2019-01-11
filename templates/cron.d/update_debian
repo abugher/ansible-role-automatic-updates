@@ -1,0 +1,2 @@
+# m     h       dom     mon     dow     user    command
+{{ update_minute }}      {{ update_hour }}      *       *       *       root    /usr/local/bin/update_debian_cronjob
