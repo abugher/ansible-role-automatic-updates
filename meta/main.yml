@@ -2,3 +2,5 @@
 dependencies:
   - role:       'time'
     when:       skipdeps is not defined
+  - role:       'reboot'
+    when:       skipdeps is not defined
