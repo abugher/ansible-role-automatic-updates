@@ -4,3 +4,7 @@ dependencies:
     when:       skipdeps is not defined
   - role:       'reboot'
     when:       skipdeps is not defined
+  # Remove undesired packages before they can be upgraded, which can
+  # overwrite desired files.  (linux-stretch-root-next-orangepipcplus)
+  - role:       'user_friendly'
+    when:       skipdeps is not defined
