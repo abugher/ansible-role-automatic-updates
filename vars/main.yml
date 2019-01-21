@@ -4,6 +4,7 @@ install_packages:
   - 'debian-keyring'
   - 'debian-archive-keyring'
   - 'aptitude'
+  - 'rsync'
 install_files:
   - owner:              'root'
     group:              'root'
