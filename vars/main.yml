@@ -53,7 +53,7 @@ template_files:
 sync_dirs:
   - src:                '../../inventory/hosts/{{ inventory_hostname }}/files/conf/sources.list.d/'
     dest:               '/etc/apt/sources.list.d/'
-    delete:             'yes'
+    delete:             'no'
 remove_files:
   - '/etc/apt/sources.list.d/collabora.list'
   - '/etc/apt/sources.list.d/raspi.list'
