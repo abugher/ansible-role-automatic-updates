@@ -1,6 +1,6 @@
 ---
 - name:                 'check log'
-  shell:                grep -q . /var/log/debian_update.log
+  shell:                grep -q . /var/log/update_debian.log
   register:             check_log_result
   failed_when:          false
   changed_when:         0 != check_log_result.rc

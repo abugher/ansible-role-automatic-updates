@@ -1,0 +1,7 @@
+---
+# Functionally redundant to the shared apt_update apt_upgrade and
+# apt_full_upgrade tasks.  This task exists to exercise the update scripts
+# installed by the automatic_updates role.
+- name:                 'run updates'
+  shell:                '/usr/local/bin/update_debian_cronjob'
+  register:             run_updates_result

@@ -5,12 +5,7 @@
 - include:              '../tasks/sync_dirs.yml'
 - include:              '../tasks/remove_files.yml'
 - include:              'check_log.yml'
-- include:              '../tasks/apt_update.yml'
-- include:              '../tasks/apt_upgrade.yml'
-  when:                 install_files_result.changed or 
-                        remove_files_result.changed or
-                        check_log_result.changed
-- include:              '../tasks/apt_full_upgrade.yml'
+- include:              'run_updates.yml'
   when:                 install_files_result.changed or 
                         remove_files_result.changed or
                         check_log_result.changed
