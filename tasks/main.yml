@@ -4,10 +4,13 @@
 - include:              '../tasks/template_files.yml'
 - include:              '../tasks/sync_dirs.yml'
 - include:              '../tasks/remove_files.yml'
+- include:              'check_log.yml'
 - include:              '../tasks/apt_update.yml'
 - include:              '../tasks/apt_upgrade.yml'
+  when:                 install_files_result.changed or 
+                        remove_files_result.changed or
+                        check_log_result.changed
 - include:              '../tasks/apt_full_upgrade.yml'
   when:                 install_files_result.changed or 
                         remove_files_result.changed or
-                        shell_commands_ignore_result_result.rc != 0
-
+                        check_log_result.changed
