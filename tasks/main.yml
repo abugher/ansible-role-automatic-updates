@@ -9,5 +9,5 @@
 - include:              '../tasks/apt_full_upgrade.yml'
   when:                 install_files_result.changed or 
                         remove_files_result.changed or
-                        shell_commands_ignore_result.rc != 0
+                        shell_commands_ignore_result_result.rc != 0
 
