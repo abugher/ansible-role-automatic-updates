@@ -58,5 +58,7 @@ remove_files:
   - '/etc/apt/sources.list.d/collabora.list'
   - '/etc/apt/sources.list.d/raspi.list'
   - '/etc/apt/sources.list.d/wolfram.list'
-  - '/var/log/update_debian.daily.log'
-  - '/var/log/update_debian.daily.ret'
+shell_commands_ignore_result:
+  - command:            'grep -q . /var/log/debian_update.log'
+    user:               'root'
+    chdir:              '/'
