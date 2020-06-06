@@ -32,7 +32,7 @@ fail() {
   || fail $ERR_UPDATE "Updates failed: ${?}"
 echo -e "Updates successful."
 
-/usr/bin/aptitude full-upgrade -y \
+DEBIAN_FRONTEND=noninteractive /usr/bin/aptitude full-upgrade -y \
   || fail $ERR_UPGRADE "Upgrades failed: ${?}"
 echo -e "Upgrades successful."
 
