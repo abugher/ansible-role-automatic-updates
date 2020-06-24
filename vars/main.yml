@@ -56,5 +56,5 @@ sync_dirs:
     delete:             'no'
 remove_files:
   - '/etc/apt/sources.list.d/collabora.list'
-  - '/etc/apt/sources.list.d/raspi.list'
+#  - '/etc/apt/sources.list.d/raspi.list'
   - '/etc/apt/sources.list.d/wolfram.list'
