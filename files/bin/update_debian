@@ -72,12 +72,12 @@ fi
 # https://github.com/Hexxeh/rpi-firmware/issues/109
 # https://www.raspberrypi.org/forums/viewtopic.php?f=28&t=137442&p=913294
 # Avoid a kernel bug that breaks cryptsetup.
-if test -e /usr/bin/rpi-update; then
-  /usr/bin/rpi-update 2ea8550c0fc6f4b916b3698fad857138d8a2da64 \
-    || fail $ERR_RPI_UPDATE "rpi-update failed: ${?}"
-  echo -en "rpi-update successful."
-else
-  echo -e "rpi-update skipped."
-fi
+#if test -e /usr/bin/rpi-update; then
+#  /usr/bin/rpi-update 2ea8550c0fc6f4b916b3698fad857138d8a2da64 \
+#    || fail $ERR_RPI_UPDATE "rpi-update failed: ${?}"
+#  echo -en "rpi-update successful."
+#else
+#  echo -e "rpi-update skipped."
+#fi
 
 /usr/local/bin/stamp
