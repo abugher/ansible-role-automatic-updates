@@ -29,7 +29,7 @@ install_files:
   - owner:              'root'
     group:              'root'
     mode:               '0755'
-    src:                "../../inventory/hosts/{{ inventory_hostname }}/files/conf/policy-rc.d"
+    src:                "files/conf/policy-rc.d"
     dest:               '/usr/sbin/policy-rc.d'
   - owner:              'root'
     group:              'root'
