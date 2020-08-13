@@ -4,4 +4,5 @@
 # installed by the automatic_updates role.
 - name:                 'run updates'
   shell:                '/usr/local/bin/update_debian_cronjob'
+  retries:              3
   register:             run_updates_result
