@@ -26,16 +26,6 @@ install_files:
     mode:               '0755'
     src:                "files/bin/update_debian_cronjob"
     dest:               '/usr/local/bin/update_debian_cronjob'
-  - owner:              'root'
-    group:              'root'
-    mode:               '0755'
-    src:                "files/conf/policy-rc.d"
-    dest:               '/usr/sbin/policy-rc.d'
-  - owner:              'root'
-    group:              'root'
-    mode:               '0644'
-    src:                "../../inventory/hosts/{{ inventory_hostname }}/files/conf/sources.list"
-    dest:               '/etc/apt/sources.list'
 # https://git.devuan.org/devuan-packages/devuan-keyring/blob/master/keyrings/devuan-keyring.gpg
 # The key comes with the OS.  Installing the key facilitates transition from
 # stretch to ascii, but manual labor is still required for successful transition.
@@ -50,11 +40,3 @@ template_files:
     mode:               '0644'
     src:                "templates/cron.d/update_debian"
     dest:               '/etc/cron.d/update_debian'
-sync_dirs:
-  - src:                '../../inventory/hosts/{{ inventory_hostname }}/files/conf/sources.list.d/'
-    dest:               '/etc/apt/sources.list.d/'
-    delete:             'no'
-remove_files:
-  - '/etc/apt/sources.list.d/collabora.list'
-#  - '/etc/apt/sources.list.d/raspi.list'
-  - '/etc/apt/sources.list.d/wolfram.list'

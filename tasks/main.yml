@@ -2,7 +2,6 @@
 - include:              '../tasks/install_packages.yml'
 - include:              '../tasks/install_files.yml'
 - include:              '../tasks/template_files.yml'
-- include:              '../tasks/sync_dirs.yml'
 - include:              '../tasks/remove_files.yml'
 - include:              'check_log.yml'
 - include:              'run_updates.yml'
