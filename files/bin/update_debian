@@ -36,14 +36,17 @@ DEBIAN_FRONTEND=noninteractive /usr/bin/aptitude full-upgrade -y \
   || fail $ERR_UPGRADE "Upgrades failed: ${?}"
 echo -e "Upgrades successful."
 
-/usr/sbin/checkrestart \
-  | grep '^service ' \
+checkrestart_output="$(/usr/sbin/checkrestart)"
+grep '^service ' <<< "${checkrestart_output}" \
   | while read service_line; do
     eval "${service_line}" \
       || fail $ERR_CHECKRESTART_SERVICE "Service restart returned: ${?}; service line: '${service_line}'"
   done \
-  || fail $ERR_CHECKRESTART "Service restarts returned: ${?}"
+  || fail $ERR_REBOOT "Service restarts returned: ${?}"
 echo -e "Service restarts returned true."
+
+grep -q 'do not seem to have an associated init script' <<< "${checkrestart_output}" \
+  && fail $ERR_REBOOT "Reboot required due to old code with no associated service."
 
 ! test -e /var/run/reboot-required \
   || fail $ERR_REBOOT "Reboot required: ${?}"

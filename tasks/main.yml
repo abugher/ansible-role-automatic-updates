@@ -2,9 +2,7 @@
 - include:              '../tasks/install_packages.yml'
 - include:              '../tasks/install_files.yml'
 - include:              '../tasks/template_files.yml'
-- include:              '../tasks/remove_files.yml'
 - include:              'check_log.yml'
 - include:              'run_updates.yml'
-  when:                 install_files_result.changed or 
-                        remove_files_result.changed or
-                        check_log_result.changed
+  when:                 install_files_result.changed
+                        or check_log_result.changed
