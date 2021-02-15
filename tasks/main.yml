@@ -1,4 +1,6 @@
 ---
+- include:              '../tasks/dependencies.yml'
+- include:              '../tasks/depend_on_platform.yml'
 - include:              '../tasks/install_packages.yml'
 - include:              '../tasks/install_files.yml'
 - include:              '../tasks/template_files.yml'
