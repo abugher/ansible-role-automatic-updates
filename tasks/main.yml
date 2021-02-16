@@ -1,6 +1,8 @@
 ---
-- include:              '../tasks/dependencies.yml'
+# 2021-02-16:  Package 'ntp' is not found until source lists are updated, for
+# jetson_nano platform, with Ubuntu stock image.
 - include:              '../tasks/depend_on_platform.yml'
+- include:              '../tasks/dependencies.yml'
 - include:              '../tasks/install_packages.yml'
 - include:              '../tasks/install_files.yml'
 - include:              '../tasks/template_files.yml'
