@@ -19,16 +19,6 @@ install_files:
     mode:               '0755'
     src:                "files/bin/update_debian"
     dest:               '/usr/local/bin/update_debian'
-  - owner:              'root'
-    group:              'root'
-    mode:               '0755'
-    src:                "files/bin/update_debian_now"
-    dest:               '/usr/local/bin/update_debian_now'
-  - owner:              'root'
-    group:              'root'
-    mode:               '0755'
-    src:                "files/bin/update_debian_cronjob"
-    dest:               '/usr/local/bin/update_debian_cronjob'
 # https://git.devuan.org/devuan-packages/devuan-keyring/blob/master/keyrings/devuan-keyring.gpg
 # The key comes with the OS.  Installing the key facilitates transition from
 # stretch to ascii, but manual labor is still required for successful transition.
@@ -43,3 +33,9 @@ template_files:
     mode:               '0644'
     src:                "templates/cron.d/update_debian"
     dest:               '/etc/cron.d/update_debian'
+  - owner:              'root'
+    group:              'root'
+    mode:               '0755'
+    src:                "templates/bin/update_debian_cronjob.j2"
+    dest:               '/usr/local/bin/update_debian_cronjob'
+
