@@ -7,6 +7,12 @@ install_packages:
   - 'debian-archive-keyring'
   - 'aptitude'
   - 'rsync'
+# This needs to run once before packages can be installed.  It isn't really
+# specific to this role and should probably be specified at a higher level, and
+# done before ANY roles are applied.  This role is pretty early in the deploy
+# process, though, so this seems to work for now.
+commands:
+  - command:            'apt update'
 install_files:
   - owner:              'root'
     group:              'root'
