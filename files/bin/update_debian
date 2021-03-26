@@ -1,9 +1,133 @@
 #!/bin/bash
 
-# DISTRIBUTED BY ANSIBLE
-
 # checkrestart requires package debian-goodies.
 # /var/run/reboot-required requires package update-notifier-common.
+
+
+function main() {
+  /usr/local/bin/stamp
+  aptitude_update; update_ret="${?}"
+  aptitude_upgrade; upgrade_ret="${?}"
+  check_old_code; checkrestart_ret="${?}"
+  autoclean; autoclean_ret="${?}"
+  update_python; python_ret="${?}"
+  update_kanboard; kanboard_ret="${?}"
+  update_rpi; rpi_ret="${?}"
+
+  if ! test 0 = "${checkrestart_ret}"; then 
+    fail $ERR_REBOOT "Reboot required: (${checkrestart_ret})"
+  elif ! test 0 = "${update_ret}"; then 
+    fail $ERR_UPDATE "Updates failed: ${update_ret}"
+  elif ! test 0 = "${upgrade_ret}"; then 
+    fail $ERR_UPGRADE "Upgrades failed: ${upgrade_ret}"
+  elif ! test 0 = "${autoclean_ret}"; then 
+    fail $ERR_AUTOCLEAN "Autoclean failed: ${autoclean_ret}"
+  elif ! test 0 = "${python_ret}"; then
+    fail $ERR_PYTHON "Python updates failed: ${python_ret}"
+  elif ! test 0 = "${kanboard_ret}"; then
+    fail $ERR_KANBOARD "kanboard update failed: ${kanboard_ret}"
+  elif ! test 0 = "${rpi_ret}"; then
+    fail $ERR_RPI_UPDATE "rpi-update failed: ${rpi_ret}"
+  fi
+
+  output "Success."
+  /usr/local/bin/stamp
+}
+
+
+
+function aptitude_update() {
+  /usr/bin/aptitude update \
+    && output "Updates successful."
+}
+
+
+function aptitude_upgrade() {
+  DEBIAN_FRONTEND=noninteractive /usr/bin/aptitude full-upgrade -y \
+    && echo -e "Upgrades successful."
+}
+
+
+function check_old_code() {
+  checkrestart_output="$(/usr/sbin/checkrestart)"
+  grep '^service ' <<< "${checkrestart_output}" \
+    | while read service_line; do
+      if ! eval "${service_line}"; then
+        error "Service restart returned: ${?}; service line: '${service_line}'"
+        return $ERR_CHECKRESTART_SERVICE 
+      fi
+    done
+  output "Service restarts returned true."
+
+  if grep -q 'do not seem to have an associated init script' <<< "${checkrestart_output}"; then
+    error "Reboot required due to old code with no associated service."
+    return $ERR_CHECKRESTART
+  fi
+
+  if test -e /var/run/reboot-required; then
+    error "Reboot required."
+    return $ERR_REBOOT 
+  fi
+  output "No reboot required."
+}
+
+
+function autoclean() {
+  /usr/bin/aptitude autoclean -y \
+    && output "Autoclean successful."
+}
+
+
+function update_python() {
+  if test -e /usr/local/bin/update_python_packages; then
+    /usr/local/bin/update_python_packages \
+      && output "Python updates successful."
+  else
+    output "Python updates skipped."
+  fi
+}
+
+
+function update_kanboard() {
+  if test -e /usr/local/bin/update_kanboard; then
+    /usr/local/bin/update_kanboard \
+      && echo -e "Kanboard update successful."
+  else
+    echo -e "Kanboard update skipped."
+  fi
+}
+
+
+function update_rpi() {
+  # https://github.com/Hexxeh/rpi-firmware/issues/109
+  # https://www.raspberrypi.org/forums/viewtopic.php?f=28&t=137442&p=913294
+  # Avoid a kernel bug that breaks cryptsetup.
+  #if test -e /usr/bin/rpi-update; then
+  #  /usr/bin/rpi-update 2ea8550c0fc6f4b916b3698fad857138d8a2da64 \
+  #    && output "rpi-update successful."
+  #else
+  #  output "rpi-update skipped."
+  #fi
+  true
+}
+
+
+function fail() {
+  error "${2}"
+  /usr/local/bin/stamp
+  exit ${1}
+}
+
+
+function error() {
+  output "ERROR:  ${1}" >&2
+}
+
+
+function output() {
+  printf '%s\n' "${1}"
+}
+
 
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
@@ -21,66 +145,5 @@ PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
                    ERR_KANBOARD=8
                  ERR_RPI_UPDATE=9
 
-fail() {
-  echo -e "Error:  ${2}"
-  exit ${1}
-}
 
-/usr/local/bin/stamp
-
-/usr/bin/aptitude update \
-  || fail $ERR_UPDATE "Updates failed: ${?}"
-echo -e "Updates successful."
-
-DEBIAN_FRONTEND=noninteractive /usr/bin/aptitude full-upgrade -y \
-  || fail $ERR_UPGRADE "Upgrades failed: ${?}"
-echo -e "Upgrades successful."
-
-checkrestart_output="$(/usr/sbin/checkrestart)"
-grep '^service ' <<< "${checkrestart_output}" \
-  | while read service_line; do
-    eval "${service_line}" \
-      || fail $ERR_CHECKRESTART_SERVICE "Service restart returned: ${?}; service line: '${service_line}'"
-  done \
-  || fail $ERR_REBOOT "Service restarts returned: ${?}"
-echo -e "Service restarts returned true."
-
-grep -q 'do not seem to have an associated init script' <<< "${checkrestart_output}" \
-  && fail $ERR_REBOOT "Reboot required due to old code with no associated service."
-
-! test -e /var/run/reboot-required \
-  || fail $ERR_REBOOT "Reboot required: ${?}"
-echo -e "No reboot required."
-
-/usr/bin/aptitude autoclean -y \
-  || fail $ERR_AUTOCLEAN "Autoclean failed: ${?}"
-echo -e "Autoclean successful."
-
-if test -e /usr/local/bin/update_python_packages; then
-  /usr/local/bin/update_python_packages \
-    || fail $ERR_PYTHON "Python updates failed: ${?}"
-  echo -e "Python updates successful."
-else
-  echo -e "Python updates skipped."
-fi
-
-if test -e /usr/local/bin/update_kanboard; then
-  /usr/local/bin/update_kanboard \
-    || fail $ERR_KANBOARD "kanboard update failed: ${?}"
-  echo -e "Kanboard update successful."
-else
-  echo -e "Kanboard update skipped."
-fi
-
-# https://github.com/Hexxeh/rpi-firmware/issues/109
-# https://www.raspberrypi.org/forums/viewtopic.php?f=28&t=137442&p=913294
-# Avoid a kernel bug that breaks cryptsetup.
-#if test -e /usr/bin/rpi-update; then
-#  /usr/bin/rpi-update 2ea8550c0fc6f4b916b3698fad857138d8a2da64 \
-#    || fail $ERR_RPI_UPDATE "rpi-update failed: ${?}"
-#  echo -en "rpi-update successful."
-#else
-#  echo -e "rpi-update skipped."
-#fi
-
-/usr/local/bin/stamp
+main
