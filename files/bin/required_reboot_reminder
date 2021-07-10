@@ -1,0 +1,42 @@
+#!/bin/bash
+#
+# Remind the user when a reboot is required after updates.  Wait $interval
+# after being dismissed before reminding again.
+#
+# This should be launched during X startup for the primary user of any desktop
+# system, assuming reboots are not enacted automatically when required after OS
+# updates.
+#
+# This accompanies the automatic_updates ansible module.  There may or may not
+# be a good way to install this automatically for the correct user, but it
+# should remain with the ansible role regardless, as it assumes that role has
+# been deployed, and relies on the log files and exit codes defined by the
+# role.
+
+#interval=$(( 60 * 60 ))  # One hour.
+interval=$(( 24 * 60 * 60 ))  # One day.
+
+
+function main() {
+  while true; do
+    if grep -q '^5$' < /var/log/update_debian.ret; then
+      notify
+    fi
+    sleep "${interval}"
+  done
+}
+
+
+function notify() {
+  xmessage -center -buttons '          acknowledge          ':0 \
+"OS updates require a reboot to complete.  Options:
+
+* Press Ctrl+Alt+F2 then Ctrl+Alt+Del.
+* Issue this command:  sudo reboot
+* Use the power menu in your desktop environment.
+* Tap or hold the physical power button.
+"
+}
+
+
+main
