@@ -43,7 +43,7 @@ function aptitude_update() {
 
 
 function aptitude_upgrade() {
-  DEBIAN_FRONTEND=noninteractive /usr/bin/aptitude full-upgrade -y \
+  DEBIAN_FRONTEND=noninteractive /usr/bin/aptitude -o DPkg::Options::=--force-confdef full-upgrade -y \
     && echo -e "Upgrades successful."
 }
 
