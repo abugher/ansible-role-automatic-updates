@@ -3,7 +3,13 @@
 # jetson_nano platform, with Ubuntu stock image.
 - include:              '../tasks/depend_on_platform.yml'
 - include:              '../tasks/dependencies.yml'
-- include:              '../tasks/commands.yml'
+# This needs to run once before packages can be installed.  It isn't really
+# specific to this role and should probably be specified at a higher level, and
+# done before ANY roles are applied.  This role is pretty early in the deploy
+# process, though, so this seems to work for now.
+- command:              apt update
+  become:               true
+  changed_when:         False
 - include:              '../tasks/install_packages.yml'
 - include:              '../tasks/install_files.yml'
 - include:              '../tasks/template_files.yml'
