@@ -16,4 +16,4 @@
 - include:              'check_log.yml'
 - include:              'run_updates.yml'
   when:                 install_files_result.changed
-                        or check_log_result.changed
+                        or 0 != check_log_result.rc
