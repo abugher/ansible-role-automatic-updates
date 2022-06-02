@@ -14,21 +14,10 @@
 # role.
 
 #interval=$(( 60 * 60 ))  # One hour.
-interval=$(( 24 * 60 * 60 ))  # One day.
+interval=$(( 60 * 60 * 24 ))  # One day.
+max_age=$(( 60 * 60 * 24 * 2 )) # Two days.
 
-
-function main() {
-  while true; do
-    if grep -q '^5$' < /var/log/update_debian.ret; then
-      notify
-    fi
-    sleep "${interval}"
-  done
-}
-
-
-function notify() {
-  xmessage -center -buttons '          acknowledge          ':0 \
+reboot_message=\
 "OS updates require a reboot to complete.  Options:
 
 * Press Ctrl+Alt+F2 then Ctrl+Alt+Del.
@@ -36,6 +25,30 @@ function notify() {
 * Use the power menu in your desktop environment.
 * Tap or hold the physical power button.
 "
+
+misconfigured_message=\
+"
+Automatic updates do not seem to be enabled.
+"
+
+
+function main() {
+  while true; do
+    if 
+      ! test -e /var/log/update_debian.ret \
+      || test $(( $(date +%s) - $(stat -c %Y /var/log/update_debian.ret) )) -gt "${max_age}"
+    then
+      notify "${misconfigured_message}"
+    elif grep -q '^5$' < /var/log/update_debian.ret; then
+      notify "${reboot_message}"
+    fi
+    sleep "${interval}"
+  done
+}
+
+
+function notify() {
+  xmessage -center -buttons '          acknowledge          ':0 "${1}"
 }
 
 
