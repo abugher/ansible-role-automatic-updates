@@ -1,0 +1,9 @@
+---
+- name:                 'stop unattended upgrade service'
+#  command:              service "{{ item }}" stop
+  service:
+    name:               "{{ item }}"
+    state:              'stopped'
+  with_items:           "{{ unattended_upgrade_service }}"
+  register:             stop_services_result
+  failed_when:          False
