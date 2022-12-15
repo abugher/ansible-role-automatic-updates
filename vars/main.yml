@@ -1,4 +1,9 @@
 ---
+symlinks:
+  - owner:              'root'
+    group:              'root'
+    src:                '/dev/null'
+    dest:               '/etc/cron.d/armbian-updates'
 dependencies:
   - 'time'
 install_packages:
@@ -41,4 +46,3 @@ template_files:
     mode:               '0755'
     src:                "templates/bin/update_debian_cronjob.j2"
     dest:               '/usr/local/bin/update_debian_cronjob'
-
