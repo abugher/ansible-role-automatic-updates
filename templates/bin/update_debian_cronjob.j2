@@ -2,6 +2,8 @@
 
 # DISTRIBUTED BY ANSIBLE
 
+export PATH="/lib/molly-guard:${PATH}"
+
 flock /tmp/update_debian.lock -c '
   echo $$ > /tmp/update_debian.lock
   ps -lfp $$ >> /tmp/update_debian.lock
@@ -12,7 +14,7 @@ rm /tmp/update_debian.lock
 
 {% if skip_reboot|default(False) == False %}
 if grep -q '^5$' < /var/log/update_debian.ret; then
-  /sbin/shutdown -r +31 "Automatic reboot for updates." > /var/log/reboot.log 2>&1
+  shutdown -r +31 "Automatic reboot for updates." > /var/log/reboot.log 2>&1
   echo $? > /var/log/reboot.ret
 fi
 {% endif %}
