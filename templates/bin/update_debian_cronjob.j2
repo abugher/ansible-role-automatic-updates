@@ -1,12 +1,25 @@
 #!/bin/bash
 
-# DISTRIBUTED BY ANSIBLE
-
 export PATH="/lib/molly-guard:${PATH}"
+export lock_file='/tmp/update_debian.lock'
+export log_tag="${0##*/} (${$})"
 
-flock /tmp/update_debian.lock -c '
-  echo $$ > /tmp/update_debian.lock
-  ps -lfp $$ >> /tmp/update_debian.lock
+if test -e "${lock_file}"; then
+  if ! flock -n "${lock_file}"; then
+    logger -t "${log_tag}" "Lock file held by PID:  $(
+      head -n 1 "${lock_file}"
+    )"
+    logger -t "${log_tag}" "$(
+      tail -n 1 "${lock_file}"
+    )"
+  fi
+fi
+
+logger -t "${log_tag}" "Acquiring lock."
+flock "${lock_file}" -c '
+  logger -t "${log_tag}" "Lock acquired."
+  echo $$ > "${lock_file}"
+  ps -lfp $$ >> "${lock_file}"
   /usr/local/bin/update_debian > /var/log/update_debian.log 2>&1
   echo $? > /var/log/update_debian.ret
 '
