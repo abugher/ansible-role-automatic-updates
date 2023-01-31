@@ -51,18 +51,9 @@ function aptitude_upgrade() {
 
 
 function check_old_code() {
-  checkrestart_output="$(/usr/sbin/checkrestart)"
-  grep '^service ' <<< "${checkrestart_output}" \
-    | while read service_line; do
-      if ! eval "${service_line}"; then
-        error "Service restart returned: ${?}; service line: '${service_line}'"
-        return $ERR_CHECKRESTART_SERVICE 
-      fi
-    done
-  output "Service restarts returned true."
-
-  if grep -q 'do not seem to have an associated init script' <<< "${checkrestart_output}"; then
-    error "Reboot required due to old code with no associated service."
+  needrestart -qr a
+  if ! needrestart -qp; then
+    error "Reboot required."
     return $ERR_CHECKRESTART
   fi
 

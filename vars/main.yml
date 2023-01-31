@@ -8,12 +8,11 @@ dependencies:
   - 'time'
 # checkrestart buttons (Ubuntu) crashes without lsof.
 install_packages:
-  - 'debian-goodies'
+  - 'needrestart'
   - 'debian-keyring'
   - 'debian-archive-keyring'
   - 'aptitude'
   - 'rsync'
-  - 'lsof'
 unattended_upgrade_service:
   - 'unattended-upgrades'
 remove_packages:
