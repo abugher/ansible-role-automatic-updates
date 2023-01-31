@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# checkrestart requires package debian-goodies.
-# /var/run/reboot-required requires package update-notifier-common.
-
 
 function main() {
   /usr/local/bin/stamp
@@ -123,10 +120,6 @@ function output() {
 
 
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-
-#echo "DEBUG:  PATH=${PATH}"
-#echo "DEBUG:  SHELL=${SHELL}"
-#echo "DEBUG:  \$0=${0}"
 
                      ERR_UPDATE=1
                     ERR_UPGRADE=2
