@@ -89,15 +89,11 @@ function update_kanboard() {
 
 
 function update_rpi() {
-  # https://github.com/Hexxeh/rpi-firmware/issues/109
-  # https://www.raspberrypi.org/forums/viewtopic.php?f=28&t=137442&p=913294
-  # Avoid a kernel bug that breaks cryptsetup.
-  #if test -e /usr/bin/rpi-update; then
-  #  /usr/bin/rpi-update 2ea8550c0fc6f4b916b3698fad857138d8a2da64 \
-  #    && output "rpi-update successful."
-  #else
-  #  output "rpi-update skipped."
-  #fi
+  if test -e /usr/bin/rpi-update; then
+    /usr/bin/rpi-update && output "rpi-update successful."
+  else
+    output "rpi-update skipped."
+  fi
   true
 }
 
