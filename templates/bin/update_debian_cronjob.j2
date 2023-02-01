@@ -3,6 +3,8 @@
 export PATH='/lib/molly-guard:/sbin:/bin:/usr/sbin:/usr/bin'
 export lock_file='/tmp/update_debian.lock'
 export log_tag="${0##*/} (${$})"
+# Slow down any accidental boot loop.
+delay=31
 
 if test -e "${lock_file}"; then
   if ! flock -n "${lock_file}"; then
@@ -27,7 +29,7 @@ rm /tmp/update_debian.lock
 
 {% if skip_reboot|default(False) == False %}
 if grep -q '^5$' < /var/log/update_debian.ret; then
-  shutdown -r +31 "Automatic reboot for updates." > /var/log/reboot.log 2>&1
+  shutdown -r +"${delay}" "Automatic reboot for updates." > /var/log/reboot.log 2>&1
   echo $? > /var/log/reboot.ret
 fi
 {% endif %}

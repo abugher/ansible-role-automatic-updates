@@ -48,15 +48,21 @@ function aptitude_upgrade() {
 
 
 function check_old_code() {
+  # Try to restart code automatically.
   needrestart -qr a
-  if ! needrestart -qp; then
-    error "Reboot required."
-    return $ERR_CHECKRESTART
+
+  # needrestart is unable to determine the expected kernel version on buttons
+  # (Ubuntu on Jetson Nano), 2023-01-31.  Don't boot loop.
+  if needrestart -b | grep -q '^NEEDRESTART-KEXP:'; then
+    if ! needrestart -qkp; then
+      error "Reboot required (kernel)."
+      return $ERR_KERNEL
+    fi
   fi
 
-  if test -e /var/run/reboot-required; then
-    error "Reboot required."
-    return $ERR_REBOOT 
+  if ! needrestart -qlp; then
+    error "Reboot required (userland)."
+    return $ERR_USERLAND
   fi
   output "No reboot required."
 }
@@ -119,8 +125,8 @@ PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
                      ERR_UPDATE=1
                     ERR_UPGRADE=2
-               ERR_CHECKRESTART=3
-       ERR_CHECKRESTART_SERVICE=4
+                     ERR_KERNEL=3
+                   ERR_USERLAND=4
                      ERR_REBOOT=5
                   ERR_AUTOCLEAN=6
                      ERR_PYTHON=7
