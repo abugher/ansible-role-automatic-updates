@@ -1,35 +1,41 @@
 #!/bin/bash
 
-export PATH='/lib/molly-guard:/sbin:/bin:/usr/sbin:/usr/bin'
-export lock_file='/tmp/update_debian.lock'
-export log_tag="${0##*/} (${$})"
-# Slow down any accidental boot loop.
-delay=31
+function update_debian_cronjob() {
+  export PATH='/lib/molly-guard:/sbin:/bin:/usr/sbin:/usr/bin'
+  export lock_file='/tmp/update_debian.lock'
+  export log_tag="${0##*/} (${$})"
+  # Slow down any accidental boot loop.
+  delay=31
 
-if test -e "${lock_file}"; then
-  if ! flock -n "${lock_file}"; then
-    logger -t "${log_tag}" "Lock file held by PID:  $(
-      head -n 1 "${lock_file}"
-    )"
-    logger -t "${log_tag}" "$(
-      tail -n 1 "${lock_file}"
-    )"
+  if test -e "${lock_file}"; then
+    if ! flock -n "${lock_file}"; then
+      logger -t "${log_tag}" "Lock file held by PID:  $(
+        head -n 1 "${lock_file}"
+      )"
+      logger -t "${log_tag}" "$(
+        tail -n 1 "${lock_file}"
+      )"
+    fi
   fi
-fi
 
-logger -t "${log_tag}" "Acquiring lock."
-flock "${lock_file}" -c '
-  logger -t "${log_tag}" "Lock acquired."
-  echo $$ > "${lock_file}"
-  ps -lfp $$ >> "${lock_file}"
-  /usr/local/bin/update_debian > /var/log/update_debian.log 2>&1
-  echo $? > /var/log/update_debian.ret
-'
-rm /tmp/update_debian.lock
+  logger -t "${log_tag}" "Acquiring lock."
+  flock "${lock_file}" -c '
+    logger -t "${log_tag}" "Lock acquired."
+    echo $$ > "${lock_file}"
+    ps -lfp $$ >> "${lock_file}"
+    /usr/local/bin/update_debian > /var/log/update_debian.log 2>&1
+    echo $? > /var/log/update_debian.ret
+  '
+  rm /tmp/update_debian.lock
 
-{% if skip_reboot|default(False) == False %}
-if grep -q '^5$' < /var/log/update_debian.ret; then
-  shutdown -r +"${delay}" "Automatic reboot for updates." > /var/log/reboot.log 2>&1
-  echo $? > /var/log/reboot.ret
-fi
-{% endif %}
+  {% if skip_reboot|default(False) == False %}
+  if grep -q '^5$' < /var/log/update_debian.ret; then
+    shutdown -r +"${delay}" "Automatic reboot for updates." > /var/log/reboot.log 2>&1
+    echo $? > /var/log/reboot.ret
+  fi
+  {% endif %}
+}
+
+
+update_debian_cronjob &
+disown
