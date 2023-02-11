@@ -27,8 +27,9 @@ flock "${lock_file}" -c '
   ps -lfp $$ >> "${lock_file}"
   /usr/local/bin/update_debian > /var/log/update_debian.log 2>&1
   echo $? > /var/log/update_debian.ret
-  rm "${lock_file}"
 '
+# Removing the lock file, before or after unlocking, breaks flock's
+# expectations.  Just leave it.
 $log "Lock released.  flock return status:  ${?}"
 
 {% if skip_reboot|default(False) == False %}
