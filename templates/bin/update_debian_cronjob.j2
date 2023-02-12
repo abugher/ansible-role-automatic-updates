@@ -26,7 +26,9 @@ flock "${lock_file}" -c '
   echo $$ > "${lock_file}"
   ps -lfp $$ >> "${lock_file}"
   /usr/local/bin/update_debian > /var/log/update_debian.log 2>&1
-  echo $? > /var/log/update_debian.ret
+  ret=$?
+  echo $ret > /var/log/update_debian.ret
+  if test 0 = $ret; then date +%s > /var/log/update_debian.last_success; fi
 '
 # Removing the lock file, before or after unlocking, breaks flock's
 # expectations.  Just leave it.
