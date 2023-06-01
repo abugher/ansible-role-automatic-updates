@@ -71,6 +71,9 @@ function check_old_code() {
 function autoclean() {
   /usr/bin/aptitude autoclean -y \
     && output "Autoclean successful."
+  # Remove old kernels.
+  /usr/bin/apt-get -y autoremove \
+    && output "Autoremove (kernels) successful."
 }
 
 
