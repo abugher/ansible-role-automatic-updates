@@ -1,22 +1,11 @@
 ---
+dependencies:
+  - 'time'
 symlinks:
   - owner:              'root'
     group:              'root'
     src:                '/dev/null'
     dest:               '/etc/cron.d/armbian-updates'
-dependencies:
-  - 'time'
-# checkrestart buttons (Ubuntu) crashes without lsof.
-install_packages:
-  - 'needrestart'
-  - 'debian-keyring'
-  - 'debian-archive-keyring'
-  - 'aptitude'
-  - 'rsync'
-unattended_upgrade_service:
-  - 'unattended-upgrades'
-remove_packages:
-  - 'unattended-upgrades'
 install_files:
   - owner:              'root'
     group:              'root'
@@ -36,6 +25,15 @@ install_files:
 #    mode:               '0644'
 #    src:                "files/keys/devuan-keyring.gpg"
 #    dest:               '/etc/apt/trusted.gpg.d/devuan-keyring.gpg'
+remove_files:
+  - '/etc/apt/sources.list'
+sync_dirs:
+  - src:                '../inventory/hosts/{{ inventory_hostname }}/files/conf/apt/sources.list.d/'
+    dest:               '/etc/apt/sources.list.d/'
+    delete:             False
+  - src:                '../inventory/hosts/{{ inventory_hostname }}/files/conf/apt/apt.conf.d/'
+    dest:               '/etc/apt/apt.conf.d/'
+    delete:             False
 template_files:
   - owner:              'root'
     group:              'root'
@@ -47,3 +45,14 @@ template_files:
     mode:               '0755'
     src:                "templates/bin/update_debian_cronjob.j2"
     dest:               '/usr/local/bin/update_debian_cronjob'
+# checkrestart buttons (Ubuntu) crashes without lsof.
+install_packages:
+  - 'needrestart'
+  - 'debian-keyring'
+  - 'debian-archive-keyring'
+  - 'aptitude'
+  - 'rsync'
+unattended_upgrade_service:
+  - 'unattended-upgrades'
+remove_packages:
+  - 'unattended-upgrades'

@@ -1,22 +1,21 @@
 ---
+- include:              '../tasks/dependencies.yml'
+- include:              '../tasks/depend_on_platform.yml'
 - include:              '../tasks/symlinks.yml'
 # 2021-02-16:  Package 'ntp' is not found until source lists are updated, for
 # jetson_nano platform, with Ubuntu stock image.
-- include:              '../tasks/depend_on_platform.yml'
-- include:              '../tasks/dependencies.yml'
-# This needs to run once before packages can be installed.  It isn't really
-# specific to this role and should probably be specified at a higher level, and
-# done before ANY roles are applied.  This role is pretty early in the deploy
-# process, though, so this seems to work for now.
+- include:              '../tasks/install_files.yml'
+- include:              '../tasks/remove_files.yml'
+- include:              '../tasks/sync_dirs.yml'
+- include:              '../tasks/template_files.yml'
 - command:              apt update
   become:               true
   changed_when:         False
 - include:              '../tasks/install_packages.yml'
 - include:              'stop_ua_service.yml'
 - include:              '../tasks/remove_packages.yml'
-- include:              '../tasks/install_files.yml'
-- include:              '../tasks/template_files.yml'
 - include:              'check_log.yml'
 - include:              'run_updates.yml'
   when:                 install_files_result.changed
+                        or sync_dirs_result.changed
                         or 0 != check_log_result.rc
