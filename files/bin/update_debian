@@ -3,7 +3,7 @@
 
 function main() {
   /usr/local/bin/stamp
-  ntp-wait
+  ntpwait
   /usr/local/bin/stamp
   aptitude_update; update_ret="${?}"
   aptitude_upgrade; upgrade_ret="${?}"
