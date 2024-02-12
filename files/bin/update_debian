@@ -24,8 +24,6 @@ function main() {
     fail $ERR_PYTHON "Python updates failed: ${python_ret}"
   elif ! test 0 = "${kanboard_ret}"; then
     fail $ERR_KANBOARD "kanboard update failed: ${kanboard_ret}"
-  elif ! test 0 = "${rpi_ret}"; then
-    fail $ERR_RPI_UPDATE "rpi-update failed: ${rpi_ret}"
   fi
 
   output "Success."
@@ -123,7 +121,6 @@ PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
                   ERR_AUTOCLEAN=6
                      ERR_PYTHON=7
                    ERR_KANBOARD=8
-                 ERR_RPI_UPDATE=9
 
 
 main
