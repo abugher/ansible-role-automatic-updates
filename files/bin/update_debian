@@ -11,7 +11,6 @@ function main() {
   autoclean; autoclean_ret="${?}"
   update_python; python_ret="${?}"
   update_kanboard; kanboard_ret="${?}"
-  update_rpi; rpi_ret="${?}"
 
   if ! test 0 = "${checkrestart_ret}"; then 
     fail $ERR_REBOOT "Reboot required: (${checkrestart_ret})"
@@ -94,16 +93,6 @@ function update_kanboard() {
   else
     echo -e "Kanboard update skipped."
   fi
-}
-
-
-function update_rpi() {
-  if test -e /usr/bin/rpi-update; then
-    /usr/bin/rpi-update && output "rpi-update successful."
-  else
-    output "rpi-update skipped."
-  fi
-  true
 }
 
 
