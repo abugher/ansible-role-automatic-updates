@@ -1,12 +1,11 @@
 ---
 - include:              '../tasks/dependencies.yml'
-- include:              '../tasks/depend_on_platform.yml'
+- include:              'platform_roles.yml'
 - include:              '../tasks/symlinks.yml'
 # 2021-02-16:  Package 'ntp' is not found until source lists are updated, for
 # jetson_nano platform, with Ubuntu stock image.
 - include:              '../tasks/install_files.yml'
 - include:              '../tasks/remove_files.yml'
-- include:              '../tasks/sync_dirs.yml'
 - include:              '../tasks/template_files.yml'
 - command:              apt update
   become:               true
@@ -15,7 +14,11 @@
 - include:              'stop_ua_service.yml'
 - include:              '../tasks/remove_packages.yml'
 - include:              'check_log.yml'
-- include:              'run_updates.yml'
+#- include:              'run_updates.yml'
+- assert:
+    that:               True
+    quiet:              True
+  changed_when:         True
   when:                 install_files_result.changed
-                        or sync_dirs_result.changed
                         or 0 != check_log_result.rc
+  notify:               'run updates'

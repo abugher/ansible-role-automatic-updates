@@ -1,0 +1,13 @@
+---
+- name:                 'platform roles'
+  include_role:
+    name:               "{{ platform_role }}"
+# https://github.com/ansible/ansible/issues/82796
+#  register:             platform_roles_result
+  with_items:           "{{ platform_roles }}"
+  loop_control:
+    loop_var:           "platform_role"
+  when:                 skipdeps is not defined and platform_roles is defined
+
+- debug:
+    var:                platform_roles_result
