@@ -1,11 +1,9 @@
 ---
-xource_url:             'http://deb.debian.org/debian'
+source_url:             'http://deb.debian.org/debian'
 source_components:
   - 'main'
   - 'contrib'
   - 'nonfree'
-dependencies:
-  - 'time'
 symlinks:
   - owner:              'root'
     group:              'root'

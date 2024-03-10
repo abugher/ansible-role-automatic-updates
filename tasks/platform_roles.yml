@@ -8,6 +8,3 @@
   loop_control:
     loop_var:           "platform_role"
   when:                 skipdeps is not defined and platform_roles is defined
-
-- debug:
-    var:                platform_roles_result
