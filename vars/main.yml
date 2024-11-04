@@ -1,4 +1,6 @@
 ---
+install_packages:
+  - 'ntpwait'
 source_url:             'http://deb.debian.org/debian'
 source_components:
   - 'main'

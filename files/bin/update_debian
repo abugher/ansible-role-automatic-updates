@@ -2,9 +2,9 @@
 
 
 function main() {
-  /usr/local/bin/stamp
-  ntpwait
-  /usr/local/bin/stamp
+  /usr/local/bin/stamp || fail "Failed to stamp the time."
+  ntpwait || fail "Failed to wait for NTP."
+  /usr/local/bin/stamp || fail "Failed to stamp the time."
   aptitude_update; update_ret="${?}"
   aptitude_upgrade; upgrade_ret="${?}"
   check_old_code; checkrestart_ret="${?}"
@@ -13,17 +13,17 @@ function main() {
   update_kanboard; kanboard_ret="${?}"
 
   if ! test 0 = "${checkrestart_ret}"; then 
-    fail $ERR_REBOOT "Reboot required: (${checkrestart_ret})"
+    fail "Reboot required: (${checkrestart_ret})" $ERR_REBOOT 
   elif ! test 0 = "${update_ret}"; then 
-    fail $ERR_UPDATE "Updates failed: ${update_ret}"
+    fail "Updates failed: ${update_ret}" $ERR_UPDATE 
   elif ! test 0 = "${upgrade_ret}"; then 
-    fail $ERR_UPGRADE "Upgrades failed: ${upgrade_ret}"
+    fail "Upgrades failed: ${upgrade_ret}" $ERR_UPGRADE 
   elif ! test 0 = "${autoclean_ret}"; then 
-    fail $ERR_AUTOCLEAN "Autoclean failed: ${autoclean_ret}"
+    fail "Autoclean failed: ${autoclean_ret}" $ERR_AUTOCLEAN 
   elif ! test 0 = "${python_ret}"; then
-    fail $ERR_PYTHON "Python updates failed: ${python_ret}"
+    fail "Python updates failed: ${python_ret}" $ERR_PYTHON 
   elif ! test 0 = "${kanboard_ret}"; then
-    fail $ERR_KANBOARD "kanboard update failed: ${kanboard_ret}"
+    fail "kanboard update failed: ${kanboard_ret}" $ERR_KANBOARD 
   fi
 
   output "Success."
@@ -95,9 +95,9 @@ function update_kanboard() {
 
 
 function fail() {
-  error "${2}"
+  error "${1}"
   /usr/local/bin/stamp
-  exit ${1}
+  exit ${2:-1}
 }
 
 
