@@ -4,6 +4,9 @@
     name:               "{{ platform_role }}"
 # https://github.com/ansible/ansible/issues/82796
 #  register:             platform_roles_result
+    apply:
+      tags:
+        - 'dependency'
   with_items:           "{{ platform_roles }}"
   loop_control:
     loop_var:           "platform_role"

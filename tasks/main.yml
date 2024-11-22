@@ -7,14 +7,11 @@
 - include_tasks:        '../tasks/install_files.yml'
 - include_tasks:        '../tasks/remove_files.yml'
 - include_tasks:        '../tasks/template_files.yml'
-- command:              apt update
-  become:               true
-  changed_when:         False
+- include_tasks:        '../tasks/apt_update.yml'
 - include_tasks:        '../tasks/install_packages.yml'
 - include_tasks:        'stop_ua_service.yml'
 - include_tasks:        '../tasks/remove_packages.yml'
 - include_tasks:        'check_log.yml'
-#- include_tasks:        'run_updates.yml'
 - assert:
     that:               True
     quiet:              True
