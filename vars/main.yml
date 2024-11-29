@@ -22,8 +22,6 @@ install_files:
     mode:               '0755'
     src:                "files/bin/update_debian"
     dest:               '/usr/local/bin/update_debian'
-remove_files:
-  - '/etc/apt/sources.list'
 template_files:
   - owner:              'root'
     group:              'root'

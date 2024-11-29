@@ -5,7 +5,6 @@
 # 2021-02-16:  Package 'ntp' is not found until source lists are updated, for
 # jetson_nano platform, with Ubuntu stock image.
 - include_tasks:        '../tasks/install_files.yml'
-- include_tasks:        '../tasks/remove_files.yml'
 - include_tasks:        '../tasks/template_files.yml'
 - include_tasks:        '../tasks/apt_update.yml'
 - include_tasks:        '../tasks/install_packages.yml'
