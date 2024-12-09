@@ -1,6 +1,5 @@
 #!/bin/bash
 
-
 export PATH='/lib/molly-guard:/sbin:/bin:/usr/sbin:/usr/bin'
 export lock_file='/tmp/update_debian.lock'
 export log_tag="${0##*/} (${$})"
@@ -8,24 +7,10 @@ export log_tag="${0##*/} (${$})"
 export delay=31
 export log="logger -t '${log_tag}'"
 
-
-if test -e "${lock_file}"; then
-  # flock must have a command argument.  Read `man flock` carefully,
-  # specifically SYNOPSIS.
-  if ! flock -n "${lock_file}" true; then
-    ret="${?}"
-    $log "Lock held by PID:  $(
-      head -n 1 "${lock_file}"
-    )"
-    $log "$(
-      tail -n 1 "${lock_file}"
-    )"
-    exit "${ret}"
-  fi
-fi
-
 $log "Acquiring lock."
-flock "${lock_file}" -c '
+
+# flock must have a command argument.  Inspect `man flock`, SYNOPSIS.
+if ! flock -n "${lock_file}" -c '
   $log "Lock acquired."
   echo $$ > "${lock_file}"
   ps -lfp $$ >> "${lock_file}"
@@ -34,17 +19,27 @@ flock "${lock_file}" -c '
   echo $ret > /var/log/update_debian.ret
   if test 0 = $ret; then date +%s > /var/log/update_debian.last_success; fi
 {% if skip_reboot|default(False) == False %}
-if grep -q "^5$" /var/log/update_debian.ret; then
-  $log "Rebooting."
-  shutdown -r +"${delay}" "Automatic reboot for updates." > /var/log/reboot.log 2>&1
-  echo $? > /var/log/reboot.ret
-  # Maintain the lock until reboot commences.
-  while sleep "$(( delay + 1 ))"; do
-    $log "WARNING:  Reboot is taking longer than expected to begin."
-  done
-fi
+  if grep -q "^5$" /var/log/update_debian.ret; then
+    $log "Rebooting."
+    shutdown -r +"${delay}" "Automatic reboot for updates." > /var/log/reboot.log 2>&1
+    echo $? > /var/log/reboot.ret
+    # Maintain the lock until reboot commences.
+    while sleep "$(( delay + 1 ))"; do
+      $log "WARNING:  Reboot is taking longer than expected to begin."
+    done
+  fi
 {% endif %}
-'
+'; then
+  ret="${?}"
+  $log "Lock held by PID:  $(
+    head -n 1 "${lock_file}"
+  )"
+  $log "$(
+    tail -n 1 "${lock_file}"
+  )"
+fi
+
+$log "Lock released.  flock return status:  ${?}"
+
 # Removing the lock file, before or after unlocking, breaks flock's
 # expectations.  Just leave it.
-$log "Lock released.  flock return status:  ${?}"
