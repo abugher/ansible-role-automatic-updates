@@ -48,7 +48,8 @@ function main() {
 
 
 function notify() {
-  xmessage -center -buttons '          acknowledge          ':0 "${1}"
+  xmessage -center -buttons '          acknowledge          ':0 "${1}" \
+  || notify-send -w -t 0 -u critical 'reboot required' "${reboot_message}"
 }
 
 
