@@ -6,10 +6,6 @@ install_packages:
   - 'aptitude'
   - 'rsync'
 source_url:             'http://deb.debian.org/debian'
-source_components:
-  - 'main'
-  - 'contrib'
-  - 'nonfree'
 symlinks:
   - owner:              'root'
     group:              'root'
