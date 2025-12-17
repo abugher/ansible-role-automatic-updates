@@ -7,6 +7,9 @@ function main() {
   /usr/local/bin/stamp || fail "Failed to stamp the time."
   aptitude_update; update_ret="${?}"
   aptitude_upgrade; upgrade_ret="${?}"
+  if test 0 -eq "${upgrade_ret}"; then
+    aptitude_full_upgrade; full_upgrade_ret="${?}"
+  fi
   check_old_code; checkrestart_ret="${?}"
   autoclean; autoclean_ret="${?}"
   update_python; python_ret="${?}"
@@ -17,7 +20,9 @@ function main() {
   elif ! test 0 = "${update_ret}"; then 
     fail "Updates failed: ${update_ret}" $ERR_UPDATE 
   elif ! test 0 = "${upgrade_ret}"; then 
-    fail "Upgrades failed: ${upgrade_ret}" $ERR_UPGRADE 
+    fail "Partial upgrades failed: ${upgrade_ret}" $ERR_UPGRADE 
+  elif ! test 0 = "${full_upgrade_ret}"; then 
+    fail "Full upgrades failed: ${full_upgrade_ret}" $ERR_FULL_UPGRADE 
   elif ! test 0 = "${autoclean_ret}"; then 
     fail "Autoclean failed: ${autoclean_ret}" $ERR_AUTOCLEAN 
   elif ! test 0 = "${python_ret}"; then
@@ -39,8 +44,13 @@ function aptitude_update() {
 
 
 function aptitude_upgrade() {
+  DEBIAN_FRONTEND=noninteractive /usr/bin/aptitude -o DPkg::Options::=--force-confdef upgrade -y \
+    && echo -e "Partial OS upgrades successful."
+}
+
+function aptitude_full_upgrade() {
   DEBIAN_FRONTEND=noninteractive /usr/bin/aptitude -o DPkg::Options::=--force-confdef full-upgrade -y \
-    && echo -e "Upgrades successful."
+    && echo -e "Full OS upgrades successful."
 }
 
 
@@ -113,14 +123,16 @@ function output() {
 
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
+# These magic numbers are used in the nagios check for updates, also.
                      ERR_UPDATE=1
                     ERR_UPGRADE=2
-                     ERR_KERNEL=3
-                   ERR_USERLAND=4
-                     ERR_REBOOT=5
-                  ERR_AUTOCLEAN=6
-                     ERR_PYTHON=7
-                   ERR_KANBOARD=8
+               ERR_FULL_UPGRADE=3
+                     ERR_KERNEL=4
+                   ERR_USERLAND=5
+                     ERR_REBOOT=6
+                  ERR_AUTOCLEAN=7
+                     ERR_PYTHON=8
+                   ERR_KANBOARD=9
 
 
 main
