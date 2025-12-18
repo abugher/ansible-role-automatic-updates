@@ -5,10 +5,10 @@ function main() {
   /usr/local/bin/stamp || fail "Failed to stamp the time."
   ntpwait || fail "Failed to wait for NTP."
   /usr/local/bin/stamp || fail "Failed to stamp the time."
-  aptitude_update; update_ret="${?}"
-  aptitude_upgrade; upgrade_ret="${?}"
+  apt_update; update_ret="${?}"
+  apt_upgrade; upgrade_ret="${?}"
   if test 0 -eq "${upgrade_ret}"; then
-    aptitude_full_upgrade; full_upgrade_ret="${?}"
+    apt_full_upgrade; full_upgrade_ret="${?}"
   fi
   check_old_code; checkrestart_ret="${?}"
   autoclean; autoclean_ret="${?}"
@@ -37,19 +37,19 @@ function main() {
 
 
 
-function aptitude_update() {
-  /usr/bin/aptitude update \
+function apt_update() {
+  /usr/bin/apt update \
     && output "Updates successful."
 }
 
 
-function aptitude_upgrade() {
-  DEBIAN_FRONTEND=noninteractive /usr/bin/aptitude -o DPkg::Options::=--force-confdef upgrade -y \
+function apt_upgrade() {
+  DEBIAN_FRONTEND=noninteractive /usr/bin/apt -o DPkg::Options::=--force-confdef upgrade -y \
     && echo -e "Partial OS upgrades successful."
 }
 
-function aptitude_full_upgrade() {
-  DEBIAN_FRONTEND=noninteractive /usr/bin/aptitude -o DPkg::Options::=--force-confdef full-upgrade -y \
+function apt_full_upgrade() {
+  DEBIAN_FRONTEND=noninteractive /usr/bin/apt -o DPkg::Options::=--force-confdef full-upgrade -y \
     && echo -e "Full OS upgrades successful."
 }
 
@@ -76,10 +76,10 @@ function check_old_code() {
 
 
 function autoclean() {
-  /usr/bin/aptitude autoclean -y \
+  /usr/bin/apt autoclean -y \
     && output "Autoclean successful."
   # Remove old kernels.
-  /usr/bin/apt-get -y autoremove \
+  /usr/bin/apt -y autoremove \
     && output "Autoremove (kernels) successful."
 }
 
