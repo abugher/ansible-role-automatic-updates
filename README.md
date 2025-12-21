@@ -6,18 +6,9 @@ applies package manager configuration.
 
 # Major Version Upgrades
 
-I get this eror when incrementing the release name from `bookworm` to `trixie`,
-at the `apt update` step:
-
-    fatal: [synapse]: FAILED! => {"changed": false, "msg": "E:The value 'trixie' is invalid for APT::Default-Release as such a release is not available in the sources"}
-
-Running `apt update` by hand seems to work fine.  Running
-`update_debian_cronjob` after that does not give a similar error to above.
-There does tend to be a long delay and/or crash as aptitude tries to resolve
-dependencies.
-
 It might be wise to provide some human intervention during major version
-upgrades.
+upgrades.  However, the capability to automatically upgrade smoothly is a
+design goal.
 
 
 # BUGS
