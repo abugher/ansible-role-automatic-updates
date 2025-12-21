@@ -3,7 +3,6 @@ install_packages:
   - 'needrestart'
   - 'debian-keyring'
   - 'debian-archive-keyring'
-  - 'aptitude'
   - 'rsync'
 source_url:             'http://deb.debian.org/debian'
 symlinks:
