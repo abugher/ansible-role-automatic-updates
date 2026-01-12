@@ -123,16 +123,15 @@ function output() {
 
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
-# These magic numbers are used in the nagios check for updates, also.
-                     ERR_UPDATE=1
-                    ERR_UPGRADE=2
-               ERR_FULL_UPGRADE=3
-                     ERR_KERNEL=4
-                   ERR_USERLAND=5
-                     ERR_REBOOT=6
-                  ERR_AUTOCLEAN=7
-                     ERR_PYTHON=8
-                   ERR_KANBOARD=9
+ERR_UPDATE="{{ err_update }}"
+ERR_UPGRADE="{{ err_upgrade }}"
+ERR_FULL_UPGRADE="{{ err_full_upgrade }}"
+ERR_KERNEL="{{ err_kernel }}"
+ERR_USERLAND="{{ err_userland }}"
+ERR_REBOOT="{{ err_reboot }}"
+ERR_AUTOCLEAN="{{ err_autoclean }}"
+ERR_PYTHON="{{ err_python }}"
+ERR_KANBOARD="{{ err_kanboard }}"
 
 
 main

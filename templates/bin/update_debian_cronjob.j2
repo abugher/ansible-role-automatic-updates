@@ -17,9 +17,9 @@ if ! flock -n "${lock_file}" -c '
   /usr/local/bin/update_debian > /var/log/update_debian.log 2>&1
   ret=$?
   echo $ret > /var/log/update_debian.ret
-  if test 0 = $ret; then date +%s > /var/log/update_debian.last_success; fi
+  if test 0 -eq $ret; then date +%s > /var/log/update_debian.last_success; fi
 {% if skip_reboot|default(False) == False %}
-  if grep -q "^5$" /var/log/update_debian.ret; then
+  if test {{ err_reboot }} -eq $ret; then
     $log "Rebooting."
     shutdown -r +"${delay}" "Automatic reboot for updates." > /var/log/reboot.log 2>&1
     echo $? > /var/log/reboot.ret

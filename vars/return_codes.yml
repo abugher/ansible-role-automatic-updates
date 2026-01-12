@@ -1,0 +1,10 @@
+---
+err_update:             '1'
+err_upgrade:            '2'
+err_full_upgrade:       '3'
+err_kernel:             '4'
+err_userland:           '5'
+err_reboot:             '6'
+err_autoclean:          '7'
+err_python:             '8'
+err_kanboard:           '9'
