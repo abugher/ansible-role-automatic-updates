@@ -1,16 +1,16 @@
 ---
 - include_vars:         'return_codes.yml'
 - include_tasks:        'platform_roles.yml'
-- include_tasks:        '../tasks/install_packages.yml'
-- include_tasks:        '../tasks/symlinks.yml'
+- include_tasks:        'tasks/common/install_packages.yml'
+- include_tasks:        'tasks/common/symlinks.yml'
 # 2021-02-16:  Package 'ntp' is not found until source lists are updated, for
 # jetson_nano platform, with Ubuntu stock image.
-- include_tasks:        '../tasks/install_files.yml'
-- include_tasks:        '../tasks/template_files.yml'
-- include_tasks:        '../tasks/apt_update.yml'
-- include_tasks:        '../tasks/install_packages.yml'
+- include_tasks:        'tasks/common/install_files.yml'
+- include_tasks:        'tasks/common/template_files.yml'
+- include_tasks:        'tasks/common/apt_update.yml'
+- include_tasks:        'tasks/common/install_packages.yml'
 - include_tasks:        'stop_ua_service.yml'
-- include_tasks:        '../tasks/remove_packages.yml'
+- include_tasks:        'tasks/common/remove_packages.yml'
 - include_tasks:        'check_log.yml'
 - assert:
     that:               True
