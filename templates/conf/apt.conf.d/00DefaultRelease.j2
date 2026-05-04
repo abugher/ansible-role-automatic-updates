@@ -1,14 +1,64 @@
-# https://wiki.debian.org/AptConfiguration#Avoid_setting_APT::Default-Release
+# WARNING:  Do not set the default release name.  This file should have only
+# comment lines.
+#
+# Plan A:  If possible, just configure package sources for the desired release
+# name and associated suites, including <release>, <release>-updates,
+# <release>-security, and <release>-backports.  The backports suite should
+# automatically have a lower pin priority, so it will be ignored unless a
+# package is explicitly installed from that suite.
+#
+# Plan B:  If package suites providing newer releases must be used, but a full
+# system upgrade to that release is not desired, configure low pin priority for
+# the newer suite(s).  The same probably applies to cross-system repos, like
+# Ubuntu sources configured on a Debian system.
+#
+# 
+# Official recommendation against setting the default release name:
+# 
+#     https://wiki.debian.org/AptConfiguration#Avoid_setting_APT::Default-Release
+#
+#
+# Problem description:
 #
 # Apparently saying, "I want this release," somehow implies, "I don't want
-# security updates, even if I have sources configured for specifically for
+# security updates, even if I have package sources configured specifically for
 # security updates for this release."  
 #
-# Use a regex to avoid being victimized by this terrible design decision.
 #
-# This breaks `apt-cache policy foo` and possibly other commands which do not
-# parse the regex.  It may be ideal to unset this option, but that may require
-# pin priority configuration, depending on which extra suites are enabled in
-# sources.
-
-APT::Default-Release "/^{{ os_release_name }}(|-security|-updates)$/";
+# Rejected workaround:
+#
+# It is possible to use a regular expression in the default release
+# configuration line.  That facilitates package updates from the security and
+# updates suites, but it breaks `apt-cache policy foo` and possibly other
+# commands which do not parse the regular expression.  The resulting line would
+# look like this:
+#
+#     APT::Default-Release "/^{{ os_release_name }}(|-security|-updates)$/";
+#
+#
+# Griping:
+#
+# This became the default behavior at the release of Debian 11, Bullseye, due
+# to package repository structuring changes, specifically "debian/security"
+# transitioning to "debian-security".  Prior to that, the behavior was as I
+# would expect, upgrading packages to versions available from a security suite
+# dedicated for the named release.
+#
+# Check the references on the linked wiki page.  The obvious problems were
+# pointed out, but the attitude of the responder to the bug report seems to be
+# that this is a feature, not a bug, with no apparent regard for the fact that
+# this behavior change leaves a lot of people vulnerable if they don't happen
+# to read the release notes.  The only justification for the change I have seen
+# at all is that the developers think structuring the repo this way makes more
+# sense.  If there is a material improvement beyond aesthetics, I have not seen
+# anything written about it.
+# 
+# I did not get the memo from Bullseye through Trixie.  Apparently my systems
+# have only been getting updates as they are rolled into point releases for
+# that entire time, lagging weeks or months behind in critical security
+# updates.
+#
+# I could have read the release notes.  I could pay more attention to warnings
+# probably being ignored by my automatic update scripts.  I appreciate all the
+# free work developers do.  This still really upsets me.  I think the devs
+# really did wrong to their user base with this decision.
