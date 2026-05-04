@@ -38,18 +38,18 @@ function main() {
 
 
 function apt_update() {
-  /usr/bin/apt update \
+  /usr/bin/apt-get update \
     && output "Updates successful."
 }
 
 
 function apt_upgrade() {
-  DEBIAN_FRONTEND=noninteractive /usr/bin/apt -o DPkg::Options::=--force-confdef upgrade -y \
+  DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get -o DPkg::Options::=--force-confdef upgrade -y \
     && echo -e "Partial OS upgrades successful."
 }
 
 function apt_full_upgrade() {
-  DEBIAN_FRONTEND=noninteractive /usr/bin/apt -o DPkg::Options::=--force-confdef full-upgrade -y \
+  DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get -o DPkg::Options::=--force-confdef full-upgrade -y \
     && echo -e "Full OS upgrades successful."
 }
 
@@ -76,10 +76,10 @@ function check_old_code() {
 
 
 function autoclean() {
-  /usr/bin/apt autoclean -y \
+  /usr/bin/apt-get autoclean -y \
     && output "Autoclean successful."
   # Remove old kernels.
-  /usr/bin/apt -y autoremove \
+  /usr/bin/apt-get autoremove -y \
     && output "Autoremove (kernels) successful."
 }
 
