@@ -5,5 +5,10 @@
 # security updates for this release."  
 #
 # Use a regex to avoid being victimized by this terrible design decision.
+#
+# This breaks `apt-cache policy foo` and possibly other commands which do not
+# parse the regex.  It may be ideal to unset this option, but that may require
+# pin priority configuration, depending on which extra suites are enabled in
+# sources.
 
 APT::Default-Release "/^{{ os_release_name }}(|-security|-updates)$/";
