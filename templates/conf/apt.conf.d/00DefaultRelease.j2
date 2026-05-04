@@ -1,1 +1,9 @@
-APT::Default-Release "{{ os_release_name }}";
+# https://wiki.debian.org/AptConfiguration#Avoid_setting_APT::Default-Release
+#
+# Apparently saying, "I want this release," somehow implies, "I don't want
+# security updates, even if I have sources configured for specifically for
+# security updates for this release."  
+#
+# Use a regex to avoid being victimized by this terrible design decision.
+
+APT::Default-Release "/^{{ os_release_name }}(|-security|-updates)$/";
