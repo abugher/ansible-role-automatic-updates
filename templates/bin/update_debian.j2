@@ -2,8 +2,12 @@
 
 
 function main() {
+  # Allow ten minutes for NTP to warm up.
+  ntpwait_retry_interval=30
+  ntpwait_retry_count=21
+
   /usr/local/bin/stamp || fail "Failed to stamp the time."
-  ntpwait || fail "Failed to wait for NTP."
+  ntpwait -n "${ntpwait_retry_count}" -s "${ntpwait_retry_interval}" || fail "Failed to wait for NTP."
   /usr/local/bin/stamp || fail "Failed to stamp the time."
   apt_update; update_ret="${?}"
   apt_upgrade; upgrade_ret="${?}"

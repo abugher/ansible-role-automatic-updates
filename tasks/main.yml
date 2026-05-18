@@ -17,5 +17,6 @@
     quiet:              True
   changed_when:         True
   when:                 install_files_result.changed
+                        or template_files_result.changed
                         or 0 != check_log_result.rc
   notify:               'run updates'
