@@ -1,45 +1,112 @@
 #!/bin/bash
+#
+# Locking:
+#
+# flock can take a command argument.  If specified, a lock will be acquired by
+# the flock process and assigned to any child processes.  The lock will be
+# released when all child processes terminate.
+#
+# Package updates can result in service restarts, which will (apparently) leave
+# system services running as child processes of this script.  That would leave
+# (did leave) system services holding a lock for OS updates indefinitely.
+#
+# flock provides an option, "-u", to explicitly release a lock.  It only works
+# with a file descriptor, not with a file path.
+#
+# For those reasons, this script now opens a file descriptor to the lock file,
+# uses flock to obtain a lock on that file for this whole script, then after
+# operations are complete releases the lock explicitly.
+#
+# If you need to debug the locking situation, use the command "lslocks".  Grep
+# for "FLOCK" and the lock path to narrow down results.
+#
+#
+# Logging:
+#
+# The update script sends its output directly to a log file.  This script,
+# which handles locking and then launching the update script, uses system
+# logging.
 
-export PATH='/lib/molly-guard:/sbin:/bin:/usr/sbin:/usr/bin'
-export lock_file='/tmp/update_debian.lock'
-export log_tag="${0##*/} (${$})"
-# Slow down any accidental boot loop.
-export delay=31
-export log="logger -t '${log_tag}'"
 
-$log "Acquiring lock."
+function main() {
+  PATH='/lib/molly-guard:/sbin:/bin:/usr/sbin:/usr/bin'
+  lock_file='/tmp/update_debian.lock'
+  lock_fd=3
+  log_tag="${0##*/} (${$})"
+  # Slow down any accidental boot loop.
+  delay=31
 
-# flock must have a command argument.  Inspect `man flock`, SYNOPSIS.
-if ! flock -n "${lock_file}" -c '
-  $log "Lock acquired."
-  echo $$ > "${lock_file}"
-  ps -lfp $$ >> "${lock_file}"
-  /usr/local/bin/update_debian > /var/log/update_debian.log 2>&1
-  ret=$?
-  echo $ret > /var/log/update_debian.ret
-  if test 0 -eq $ret; then date +%s > /var/log/update_debian.last_success; fi
-{% if skip_reboot|default(False) == False %}
-  if test {{ err_reboot }} -eq $ret; then
-    $log "Rebooting."
+  lock
+
+  run_updates; ret="${?}"
+
+  {% if skip_reboot|default(False) == False %}
+  attempt_reboot
+  {% endif %}
+
+  unlock
+}
+
+
+function lock() {
+  log "Opening file descriptor for lock file."
+  eval "exec ${lock_fd}>'${lock_file}'" || fail "Failed to open file descriptor for lock file."
+  log "Acquiring lock."
+  flock -n "${lock_fd}" || fail "Failed to acquire lock."
+  log "Lock acquired by PID:  ${$}"
+  echo "${$}" > "${lock_file}" || fail "Failed to write PID to lock file."
+  log $(ps -lfp "${$}" | tee -a "${lock_file}")
+}
+
+
+function unlock() {
+  log "Dropping lock."
+  flock -u "${lock_fd}" || fail "Failed to drop lock."
+}
+
+
+function run_updates() {
+  /usr/local/bin/update_debian > /var/log/update_debian.log 2>&1; ret="${?}"
+  echo "${ret}" > /var/log/update_debian.ret
+  if test 0 -eq "${ret}"; then date +%s > /var/log/update_debian.last_success; fi
+  return "${ret}"
+}
+
+
+# Don't overload the "reboot" command; call this something else.
+function attempt_reboot() {
+  if test {{ err_reboot }} -eq "${ret}"; then
+    log "Rebooting."
     shutdown -r +"${delay}" "Automatic reboot for updates." > /var/log/reboot.log 2>&1
-    echo $? > /var/log/reboot.ret
+    echo "${?}" > /var/log/reboot.ret
     # Maintain the lock until reboot commences.
     while sleep "$(( delay + 1 ))"; do
-      $log "WARNING:  Reboot is taking longer than expected to begin."
+      warn "Reboot is taking longer than expected to begin."
     done
   fi
-{% endif %}
-'; then
-  ret="${?}"
-  $log "Lock held by PID:  $(
-    head -n 1 "${lock_file}"
-  )"
-  $log "$(
-    tail -n 1 "${lock_file}"
-  )"
-fi
+}
 
-$log "Lock released.  flock return status:  ${?}"
 
-# Removing the lock file, before or after unlocking, breaks flock's
-# expectations.  Just leave it.
+function log() {
+  logger -t "${log_tag}" "${@}"
+}
+
+
+function warn() {
+  log "WARNING:  ${1}"
+}
+
+
+function error() {
+  log "ERROR:  ${1}"
+}
+
+
+function fail() {
+  error "${1}"
+  flock -u "${lock_fd}" || warn "Failed to drop lock during error handling."
+  exit "${2:-1}"
+}
+
+
+main "${@}"
