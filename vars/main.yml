@@ -11,11 +11,6 @@ symlinks:
     src:                '/dev/null'
     dest:               '/etc/cron.d/armbian-updates'
 install_files:
-  - owner:              'root'
-    group:              'root'
-    mode:               '0755'
-    src:                'files/bin/stamp'
-    dest:               '/usr/local/bin/stamp'
   # This script is available but unused by default.  Adding it to a graphical
   # session startup routine is out of scope.
   - owner:              'root'

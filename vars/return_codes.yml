@@ -1,4 +1,5 @@
 ---
+# Redeploy the nagios role if these change.
 err_update:             '1'
 err_upgrade:            '2'
 err_full_upgrade:       '3'
