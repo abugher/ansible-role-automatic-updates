@@ -48,7 +48,35 @@ function current_time() {
 function wait_for_ntp() {
   current_time || fail "Failed to note current time."
   output "Waiting for NTP synchronization."
-  ntpwait -n "${ntpwait_try_count}" -s "${ntpwait_try_interval}"; ret="${?}"
+
+  # ntpwait fails immediately if ntpd is not yet running at all.  crond can
+  # start before ntpd, and this script is launched by cron at boot, so this
+  # script cannot rely on ntpwait to use those parameters as expected.
+  #
+  # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1137431
+
+  #ntpwait -n "${ntpwait_try_count}" -s "${ntpwait_try_interval}"; ret="${?}"
+
+  # Manually implement the wait and retry functionality to wait for the NTP
+  # service to both start and synchronize.
+
+  ret=1
+  attempt=1
+  while ! test 0 -eq "${ret}" && test "${attempt}" -le "${ntpwait_try_count}"; do
+    # `ntpwait -n 1` returns 1, even if NTP is synchronized.
+    # 
+    # https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1137430
+    #
+    # Two tries with zero interval seems fine and seems to fail immediately if
+    # not synchronized.  This is stupid, but it works.
+    ntpwait -n 2 -s 0; ret="${?}"
+    if test 0 -eq "${ret}"; then
+      break
+    fi
+    warn "Waiting for NTP attempt failed:  '${ret}'"
+    sleep "${ntpwait_try_interval}"
+  done
+
   output "Waiting for NTP synchronization returned:  '${ret}'"
   return "${ret}"
 }
@@ -190,6 +218,7 @@ function output() {
 
 
 # Allow ten minutes for NTP to warm up.
+# (Defaults are interval=6 and count=100, just short of ten minutes.)
 ntpwait_try_interval=30
 ntpwait_try_count=21
 
