@@ -2,116 +2,180 @@
 
 
 function main() {
-  # Allow ten minutes for NTP to warm up.
-  ntpwait_retry_interval=30
-  ntpwait_retry_count=21
-
-  /usr/local/bin/stamp || fail "Failed to stamp the time."
-  ntpwait -n "${ntpwait_retry_count}" -s "${ntpwait_retry_interval}" || fail "Failed to wait for NTP."
-  /usr/local/bin/stamp || fail "Failed to stamp the time."
+  wait_for_ntp; ntp_ret="${?}"
   apt_update; update_ret="${?}"
   apt_upgrade; upgrade_ret="${?}"
   if test 0 -eq "${upgrade_ret}"; then
     apt_full_upgrade; full_upgrade_ret="${?}"
   fi
-  check_old_code; checkrestart_ret="${?}"
-  autoclean; autoclean_ret="${?}"
+  check_reboot_required; old_code_ret="${?}"
+  apt_autoremove; autoremove_ret="${?}"
+  apt_autoclean; autoclean_ret="${?}"
   update_python; python_ret="${?}"
   update_kanboard; kanboard_ret="${?}"
 
-  if ! test 0 = "${checkrestart_ret}"; then 
-    fail "Reboot required: (${checkrestart_ret})" $ERR_REBOOT 
-  elif ! test 0 = "${update_ret}"; then 
-    fail "Updates failed: ${update_ret}" $ERR_UPDATE 
-  elif ! test 0 = "${upgrade_ret}"; then 
-    fail "Partial upgrades failed: ${upgrade_ret}" $ERR_UPGRADE 
-  elif ! test 0 = "${full_upgrade_ret}"; then 
-    fail "Full upgrades failed: ${full_upgrade_ret}" $ERR_FULL_UPGRADE 
-  elif ! test 0 = "${autoclean_ret}"; then 
-    fail "Autoclean failed: ${autoclean_ret}" $ERR_AUTOCLEAN 
-  elif ! test 0 = "${python_ret}"; then
-    fail "Python updates failed: ${python_ret}" $ERR_PYTHON 
-  elif ! test 0 = "${kanboard_ret}"; then
-    fail "kanboard update failed: ${kanboard_ret}" $ERR_KANBOARD 
+  if ! test 0 -eq "${old_code_ret}"; then 
+    fail "Reboot required:  '${old_code_ret}'" $ERR_REBOOT 
+  elif ! test 0 -eq "${update_ret}"; then 
+    fail "Updates failed:  '${update_ret}'" $ERR_UPDATE 
+  elif ! test 0 -eq "${upgrade_ret}"; then 
+    fail "Partial upgrades failed:  '${upgrade_ret}'" $ERR_UPGRADE 
+  elif ! test 0 -eq "${full_upgrade_ret}"; then 
+    fail "Full upgrades failed:  '${full_upgrade_ret}'" $ERR_FULL_UPGRADE 
+  elif ! test 0 -eq "${autoremove_ret}"; then 
+    fail "Autoremove failed:  '${autoremove_ret}'" $ERR_AUTOREMOVE
+  elif ! test 0 -eq "${autoclean_ret}"; then 
+    fail "Autoclean failed:  '${autoclean_ret}'" $ERR_AUTOCLEAN 
+  elif ! test 0 -eq "${python_ret}"; then
+    fail "Python updates failed:  '${python_ret}'" $ERR_PYTHON 
+  elif ! test 0 -eq "${kanboard_ret}"; then
+    fail "kanboard update failed:  '${kanboard_ret}'" $ERR_KANBOARD 
+  elif ! test 0 -eq "${ntp_ret}"; then
+    fail "Waiting for NTP synchronization failed:  '${ntp_ret}'" $ERR_NTP
   fi
 
-  output "Success."
-  /usr/local/bin/stamp
+  succeed
 }
 
 
+function current_time() {
+  output "Current time:  $(
+    date "+%Y-%m-%d_%H:%M:%S"
+  )"
+}
+
+
+function wait_for_ntp() {
+  current_time || fail "Failed to note current time."
+  output "Waiting for NTP synchronization."
+  ntpwait -n "${ntpwait_try_count}" -s "${ntpwait_try_interval}"; ret="${?}"
+  output "Waiting for NTP synchronization returned:  '${ret}'"
+  return "${ret}"
+}
+
 
 function apt_update() {
-  /usr/bin/apt-get update \
-    && output "Updates successful."
+  current_time || fail "Failed to note current time."
+  output "Apt update starting."
+  apt_interface update; ret="${?}"
+  output "Apt update returned:  '${ret}'"
+  return "${ret}"
 }
 
 
 function apt_upgrade() {
-  DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get -o DPkg::Options::=--force-confdef upgrade -y \
-    && echo -e "Partial OS upgrades successful."
+  current_time || fail "Failed to note current time."
+  output "Apt upgrade starting."
+  DEBIAN_FRONTEND=noninteractive apt_interface -o DPkg::Options::=--force-confdef upgrade -y; ret="${?}"
+  output "Apt upgrade returned:  '${ret}'"
+  return "${ret}"
 }
 
 function apt_full_upgrade() {
-  DEBIAN_FRONTEND=noninteractive /usr/bin/apt-get -o DPkg::Options::=--force-confdef full-upgrade -y \
-    && echo -e "Full OS upgrades successful."
+  current_time || fail "Failed to note current time."
+  output "Apt full upgrade starting."
+  DEBIAN_FRONTEND=noninteractive apt_interface -o DPkg::Options::=--force-confdef full-upgrade -y; ret="${?}"
+  output "Apt full upgrade returned:  '${ret}'"
 }
 
 
-function check_old_code() {
-  # Try to restart code automatically.
+function check_reboot_required() {
+  current_time || fail "Failed to note current time."
+
+  output "Attempting automatic restart of any old code."
   needrestart -qr a
 
+  current_time || fail "Failed to note current time."
+  output "Checking for old kernel."
   # needrestart is unable to determine the expected kernel version on buttons
   # (Ubuntu on Jetson Nano), 2023-01-31.  Don't boot loop.
   if needrestart -b | grep -q '^NEEDRESTART-KEXP:'; then
     if ! needrestart -qkp; then
-      error "Reboot required (kernel)."
+      output "Reboot required (kernel)."
       return $ERR_KERNEL
     fi
   fi
 
+  current_time || fail "Failed to note current time."
+  output "Checking for old userland code."
   if ! needrestart -qlp; then
-    error "Reboot required (userland)."
+    output "Reboot required (userland)."
     return $ERR_USERLAND
   fi
+
   output "No reboot required."
 }
 
 
-function autoclean() {
-  /usr/bin/apt-get autoclean -y \
-    && output "Autoclean successful."
-  # Remove old kernels.
-  /usr/bin/apt-get autoremove -y \
-    && output "Autoremove (kernels) successful."
+function apt_autoremove() {
+  current_time || fail "Failed to note current time."
+  output "Apt autoremove starting."
+  output "(Uninstalling old kernels and unneeded dependency packages.)"
+  apt_interface autoremove -y; ret="${?}"
+  output "Apt autoremove returned:  '${ret}'"
+  return "${ret}"
+}
+
+
+function apt_autoclean() {
+  current_time || fail "Failed to note current time."
+  output "Apt autoclean starting."
+  output "(Remove old package files.)"
+  apt_interface autoclean -y; ret="${?}"
+  output "Apt autoclean returned:  '${ret}'"
+  return "${ret}"
 }
 
 
 function update_python() {
+  current_time || fail "Failed to note current time."
   if test -e /usr/local/bin/update_python_packages; then
-    /usr/local/bin/update_python_packages \
-      && output "Python updates successful."
+    output "Python updates starting."
+    /usr/local/bin/update_python_packages; ret="${?}"
+    output "Python updates returned:  '${?}'"
+    return "${ret}"
   else
     output "Python updates skipped."
+    return 0
   fi
 }
 
 
 function update_kanboard() {
+  current_time || fail "Failed to note current time."
   if test -e /usr/local/bin/update_kanboard; then
-    /usr/local/bin/update_kanboard \
-      && echo -e "Kanboard update successful."
+    output "Kanboard update starging."
+    /usr/local/bin/update_kanboard; ret="${?}"
+    output "Kanboard update returned:  '${?}'"
+    return "${ret}"
   else
-    echo -e "Kanboard update skipped."
+    output "Kanboard update skipped."
   fi
+}
+
+
+function apt_interface() {
+  # apt-get, aptitude, and apt all take a lot of the same subcommands, but
+  # apt-get is recommended for scripting.
+  /usr/bin/apt-get "${@}"
+}
+
+
+function succeed() {
+  output "Success."
+  current_time || fail "Failed to note current time."
 }
 
 
 function fail() {
   error "${1}"
-  /usr/local/bin/stamp
+  current_time
   exit ${2:-1}
+}
+
+
+function warn() {
+  output "WARNING:  ${1}" >&2
 }
 
 
@@ -125,6 +189,10 @@ function output() {
 }
 
 
+# Allow ten minutes for NTP to warm up.
+ntpwait_try_interval=30
+ntpwait_try_count=21
+
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 ERR_UPDATE="{{ err_update }}"
@@ -134,8 +202,10 @@ ERR_KERNEL="{{ err_kernel }}"
 ERR_USERLAND="{{ err_userland }}"
 ERR_REBOOT="{{ err_reboot }}"
 ERR_AUTOCLEAN="{{ err_autoclean }}"
+ERR_AUTOREMOVE="{{ err_autoremove }}"
 ERR_PYTHON="{{ err_python }}"
 ERR_KANBOARD="{{ err_kanboard }}"
+ERR_NTP="{{ err_ntp }}"
 
 
 main
